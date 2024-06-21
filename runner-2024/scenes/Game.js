@@ -2,11 +2,14 @@
 export default class Game extends Phaser.Scene {
   constructor() {
     super("main");
+  }
+
+  init() {
     this.isPaused = false;
     score = 0
     tiempo.segundos = "00"
+    this.restarVidas = 1
   }
-
   create() {
     //add images
     width = this.scale.width
@@ -117,7 +120,7 @@ export default class Game extends Phaser.Scene {
 
     // add player
     this.player = this.physics.add.sprite(270, 260, "dude")
-      .setScale(1.48).setSize(20, 32).setOffset(25, -1)
+      .setScale(1.48).setSize(20, 32).setOffset(25, -1).setData('vida', 75)
 
     // add physics to player
     this.player.setCollideWorldBounds(true).setDepth(8);
@@ -125,6 +128,26 @@ export default class Game extends Phaser.Scene {
     //Establecer grupos de objetos
     this.obstaculos = this.physics.add.group();
     this.monedas = this.physics.add.group();
+
+    // Agregar Vidas
+    this.vidas = this.physics.add.group({
+      key: 'vidas',
+      repeat: 2,
+      setScale: {
+        x: 1,
+        y: 1
+      },
+      setXY: {
+        x: width / 2.15,
+        y: 15,
+        stepX: 35
+      },
+      allowGravity: false,
+    })
+
+    this.vidas.children.iterate(function (child) {
+      child.setDepth(10);
+    });
 
     // create animations Personaje
     this.anims.create({
@@ -161,7 +184,6 @@ export default class Game extends Phaser.Scene {
 
     //Inicio de juego, comienza con la animación de derecha
     this.player.anims.play("right", true);
-
 
     //collide with platforms
     this.physics.add.collider(this.player, this.pisos);
@@ -207,13 +229,12 @@ export default class Game extends Phaser.Scene {
 
     newWidth = this.cielo.width
 
-    
     // ciclo que genera las cosas
     for (let i = 0; i < generarScene; i++) {
-      const x = Phaser.Math.FloatBetween(newWidth, newWidth + 100);
+      const x = Phaser.Math.Between(newWidth - 200, newWidth + 100);
       const y = 275;
 
-      const obstaculo = this.obstaculos.create(Phaser.Math.FloatBetween(x - 100, x + 100), y, "obstacle");
+      const obstaculo = this.obstaculos.create(Phaser.Math.Between(x, x + 300), y, "obstacle");
       obstaculo.setScale(2, 2.3).refreshBody().setOffset(1, 1).setSize(25, 18)
         .setVelocityX(speedFrente)
         .setImmovable(true)
@@ -222,14 +243,14 @@ export default class Game extends Phaser.Scene {
 
       const insertRecolectable = Phaser.Math.FloatBetween(0, 1);
       if (insertRecolectable > 0.5 && insertRecolectable !== 1) {
-        recolectable = this.recolectables.create(x, y - 30, "galleta")
+        recolectable = this.recolectables.create(x, y - 50, "galleta")
           .setDepth(8)
           .setScale(1.3)
           .setVelocityX(speedFrente);
         recolectable.body.allowGravity = false;
       }
       if (insertRecolectable <= 0.28 && insertRecolectable >= 0.2) {
-        moneda = this.monedas.create(x, y - 30, "moneda")
+        moneda = this.monedas.create(x, y - 50, "moneda")
           .setDepth(8)
           .setScale(1.7)
           .setVelocityX(speedFrente)
@@ -237,13 +258,13 @@ export default class Game extends Phaser.Scene {
       }
       newWidth += width
     }
-
   }
-  
 
   update() {
     this.movimientoPersonaje()
     this.moverParallax()
+    this.ciclosDeJuego()
+    console.log(tiempo.segundos)
   }
 
   moverParallax() {
@@ -285,6 +306,45 @@ export default class Game extends Phaser.Scene {
       callback: this.correr,
       callbackScope: this,
     })
+    if (this.player.anims.play('damage', true)) {
+      if ((this.player.getData('vida') - this.restarVidas <= 75 && (this.player.getData('vida') != 0))) {
+        this.player.setData('vida', this.player.getData('vida') - this.restarVidas);
+        this.vidas.setAlpha(0.8)
+        if ((this.player.getData('vida') - this.restarVidas <= 50 && (this.player.getData('vida') != 0))) {
+          this.player.setData('vida', this.player.getData('vida') - this.restarVidas);
+          this.vidas.setAlpha(0.5)
+          if ((this.player.getData('vida') - this.restarVidas) <= 25 && (this.player.getData('vida')) != 0) {
+            this.player.setData('vida', this.player.getData('vida') - this.restarVidas);
+            console.log(this.player.getData('vida'))
+          }
+        }
+      } else {
+        console.log('perdiste')
+        this.vidas.setAlpha(0)
+      }
+    }
+  }
+
+  ciclosDeJuego() {
+    if (tiempo.segundos == tiempoDeNoche) {
+      this.hacerDeNoche()
+    }
+    if (this.noche.setAlpha(0.45)) {
+      const intervaloTiempo = 10000; // 2000 ms (2 segundos)
+      const timer = this.time.addEvent({
+        delay: intervaloTiempo,
+        callback: this.agregarMurcielgo(),
+        loop: true
+      });
+    }
+  }
+
+  hacerDeNoche() {
+    this.noche.setAlpha(0.45)
+  }
+
+  hacerDeDia() {
+    this.noche.setAlpha(0)
   }
 
   //Funcion para el movimiento del Personaje
@@ -292,7 +352,6 @@ export default class Game extends Phaser.Scene {
     if (this.cursor.down.isDown) {
       this.player.setVelocityY(200);
     }
-
     if (this.cursor.up.isDown && this.player.body.touching.down) {
       this.player.setVelocityY(-220);
       this.player.anims.play("air", true);
@@ -312,11 +371,11 @@ export default class Game extends Phaser.Scene {
   }
 
   agregarMurcielgo() {
-    //add murcielagos
-    this.murcielagos = this.physics.add.sprite(width - 10, 160, "murcielago")
+    //add murcielagos 
+    this.murcielagos = this.physics.add.sprite(width - 150, 160, "murcielago")
       .setScale(1.6)
       .setDepth(8)
-      .setVelocityX(speedFrente)
+      .setVelocityX(speedFrente + 40)
       .setImmovable(true);
     this.murcielagos.body.allowGravity = false;
 
@@ -352,6 +411,7 @@ let altura = 0.28
 let speedFrente = -190
 let contador
 let murcielagos
+let tiempoDeNoche = "05"
 
 var tiempo = {
   minutos: '00',
