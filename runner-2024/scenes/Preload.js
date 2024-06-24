@@ -14,10 +14,12 @@ export default class Preload extends Phaser.Scene {
 
         this.load.image("backplatform", "../public/assets/plataformas-1.png");
         this.load.image("platform", "../public/assets/plataformas2-1.png");
-        //this.load.spritesheet("dude", "../public/assets/perro1.png", {
-        //frameWidth: 64,
-        //frameHeight: 64,
-        //});
+
+        this.load.image("ciudad","../public/assets/ciudadela-1.png");
+
+        this.load.image('vidas', "../public/assets/vidas-1.png");
+        this.load.image('ladrido', "../public/assets/ladrido-1.png")
+
         this.load.spritesheet("dude", "../public/assets/dogfinal1.png", {
             frameWidth: 64,
             frameHeight: 33,
@@ -26,6 +28,16 @@ export default class Preload extends Phaser.Scene {
         this.load.spritesheet("dudeleft", "../public/assets/dogfinal1left.png", {
             frameWidth: 64,
             frameHeight: 33,
+        });
+
+        this.load.spritesheet("murcielago", "../public/assets/murcielago-1.png", {
+            frameWidth: 32,
+            frameHeight: 32,
+        });
+
+        this.load.spritesheet("gato", "../public/assets/gato-1.png", {
+            frameWidth: 190,
+            frameHeight: 190,
         });
 
         //this.load.image("obstacle", "../public/assets/obstaculo-1-1.png")
