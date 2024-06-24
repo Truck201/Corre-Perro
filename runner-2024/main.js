@@ -14,8 +14,8 @@ const config = {
       height: 400,
     },
     max: {
-      width: 920,
-      height: 830,
+      width: 970,
+      height: 860,
     },
   },
 
