@@ -15,6 +15,7 @@ export default class Preload extends Phaser.Scene {
 
         this.load.image("backplatform", "../public/assets/plataformas-1.png");
         this.load.image("platform", "../public/assets/plataformas2-1.png");
+        this.load.image("ladrido", "../public/assets/ladrido-1.png")
         
         this.load.spritesheet("dude", "../public/assets/dogfinal1.png", {
             frameWidth: 64,
@@ -25,6 +26,11 @@ export default class Preload extends Phaser.Scene {
             frameWidth: 32,
             frameHeight: 32,
         })
+
+        this.load.spritesheet("gato", "../public/assets/gatosprite-1.png", {
+            frameWidth: 192,
+            frameHeight: 180,
+        });
 
         //this.load.image("obstacle", "../public/assets/obstaculo-1-1.png")
         this.load.image("obstacle", "../public/assets/piedra.png");

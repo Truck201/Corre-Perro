@@ -125,9 +125,14 @@ export default class Game extends Phaser.Scene {
     // add physics to player
     this.player.setCollideWorldBounds(true).setDepth(8);
 
+    //add ladrar to group
+    this.aLadrar = this.physics.add.staticGroup();
+
     //Establecer grupos de objetos
     this.obstaculos = this.physics.add.group();
     this.monedas = this.physics.add.group();
+    this.murcielagos = this.physics.add.group();
+    this.gatos = this.physics.add.group();
 
     // Agregar Vidas
     this.vidas = this.physics.add.group({
@@ -179,6 +184,31 @@ export default class Game extends Phaser.Scene {
       repeat: -1,
     });
 
+    // Create animations Murciélagos
+    this.anims.create({
+      key: "volador",
+      frames: this.anims.generateFrameNumbers("murcielago", {
+        start: 0,
+        end: 17,
+      }),
+      frameRate: 7,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: "idle",
+      frames: this.anims.generateFrameNumbers("gato", {
+        start: 0,
+        end: 2,
+      }),
+      frameRate: 1,
+      repeat: -1,
+    });
+
+
+    this.physics.add.overlap(this.player, this.gatos, this.damagePlayer, null, this);
+    this.physics.add.overlap(this.player, this.murcielagos, this.damagePlayer, null, this);
+
     //Cuanto se va a mover la cámara
     this.cameras.main.setBounds(0, 0, width * cantScenes, height)
 
@@ -199,7 +229,8 @@ export default class Game extends Phaser.Scene {
     this.cursor = this.input.keyboard.createCursorKeys();
 
     //Agregar la tecla R
-    this.input.keyboard.on("keydown-R", this.reiniciarJuego, this)
+    this.input.keyboard.on("keydown-R", this.reiniciarJuego, this);
+    this.input.keyboard.on("keydown-X", this.ladrarPerro, this)
 
     //Agregar Enter como Escuchador
     this.input.keyboard.on('keydown-ENTER', () => {
@@ -231,40 +262,67 @@ export default class Game extends Phaser.Scene {
 
     // ciclo que genera las cosas
     for (let i = 0; i < generarScene; i++) {
-      const x = Phaser.Math.Between(newWidth - 200, newWidth + 100);
+      const x = Phaser.Math.Between(newWidth - 100, newWidth + 100);
       const y = 275;
 
-      const obstaculo = this.obstaculos.create(Phaser.Math.Between(x, x + 300), y, "obstacle");
+      const obstaculo = this.obstaculos.create(Phaser.Math.Between(x, x + 200), y, "obstacle");
       obstaculo.setScale(2, 2.3).refreshBody().setOffset(1, 1).setSize(25, 18)
-        .setVelocityX(speedFrente)
+        .setVelocityX(speedFrente - 10)
         .setImmovable(true)
         .setDepth(8);
       obstaculo.body.allowGravity = false;
+
+      const insertMurcielagos = Phaser.Math.FloatBetween(0, 1);
+      if (insertMurcielagos >= 0.5 && insertMurcielagos <= 0.9) {
+        let murcielago = this.murcielagos.create(newWidth - 10, 160, "murcielago")
+          .setScale(1.6)
+          .setDepth(8)
+          .setVelocityX(0)
+          .setImmovable(true)
+          .setAlpha(0);
+        murcielago.body.allowGravity = false;
+
+        murcielago.play("volador", true);
+      }
 
       const insertRecolectable = Phaser.Math.FloatBetween(0, 1);
       if (insertRecolectable > 0.5 && insertRecolectable !== 1) {
         recolectable = this.recolectables.create(x, y - 50, "galleta")
           .setDepth(8)
           .setScale(1.3)
-          .setVelocityX(speedFrente);
+          .setVelocityX(speedFrente - 10);
         recolectable.body.allowGravity = false;
       }
       if (insertRecolectable <= 0.28 && insertRecolectable >= 0.2) {
         moneda = this.monedas.create(x, y - 50, "moneda")
           .setDepth(8)
           .setScale(1.7)
-          .setVelocityX(speedFrente)
+          .setVelocityX(speedFrente - 10)
         moneda.body.allowGravity = false;
       }
       newWidth += width
+
+      const InsertGatos = Phaser.Math.FloatBetween(0, 1);
+      if (InsertGatos >= 0.25 && InsertGatos <= 0.5) {
+        let gato = this.gatos.create(newWidth - 10, y - 15, "gato")
+          .setScale(0.3)
+          .setDepth(8)
+          .setVelocityX(0)
+          .setImmovable(true)
+          .setAlpha(0);
+        gato.body.allowGravity = false;
+        gato.play("idle", true);
+      }
     }
+
+    const posicionY = this.player.y;
+    console.log(posicionY)
   }
 
   update() {
-    this.movimientoPersonaje()
-    this.moverParallax()
-    this.ciclosDeJuego()
-    console.log(tiempo.segundos)
+    this.movimientoPersonaje();
+    this.moverParallax();
+    this.ciclosNocheDia();
   }
 
   moverParallax() {
@@ -285,12 +343,44 @@ export default class Game extends Phaser.Scene {
       score += 300;
     txtScore.setText('Score: ' + score);
     moneda.disableBody(true, true);
-  }
 
+  }
   //Reiniciar el Juego
   reiniciarJuego() {
     this.scene.restart()
     console.log("Restart")
+  }
+
+  ladrarPerro() {
+    if (this.player.body.touching.down) {
+      let gatoMasCercano = this.encontrarGatoMasCercano();
+      if (gatoMasCercano) {
+        gatoMasCercano.destroy();
+      }
+      let ladro = this.aLadrar.create(340, 255, 'ladrido').setDepth(8)
+      this.time.addEvent({
+        delay: 200,
+        callback: this.chauLadrido,
+        callbackScope: this,
+      })
+    }
+  }
+
+  encontrarGatoMasCercano() {
+    let distanciaMinima = 400; //Number.MAX_VALUE;
+    let gatoMasCercano = null;
+    this.gatos.getChildren().forEach((gato) => {
+      const distancia = Phaser.Math.Distance.Between(this.player.x, this.player.y, gato.x, gato.y);
+      if (distancia < distanciaMinima) {
+        distanciaMinima = distancia;
+        gatoMasCercano = gato;
+      }
+    });
+    return gatoMasCercano;
+  }
+
+  chauLadrido() {
+    this.aLadrar.setAlpha(0)
   }
 
   //Volver al estado Correr
@@ -319,32 +409,10 @@ export default class Game extends Phaser.Scene {
           }
         }
       } else {
-        console.log('perdiste')
+        //console.log('perdiste')
         this.vidas.setAlpha(0)
       }
     }
-  }
-
-  ciclosDeJuego() {
-    if (tiempo.segundos == tiempoDeNoche) {
-      this.hacerDeNoche()
-    }
-    if (this.noche.setAlpha(0.45)) {
-      const intervaloTiempo = 10000; // 2000 ms (2 segundos)
-      const timer = this.time.addEvent({
-        delay: intervaloTiempo,
-        callback: this.agregarMurcielgo(),
-        loop: true
-      });
-    }
-  }
-
-  hacerDeNoche() {
-    this.noche.setAlpha(0.45)
-  }
-
-  hacerDeDia() {
-    this.noche.setAlpha(0)
   }
 
   //Funcion para el movimiento del Personaje
@@ -363,36 +431,30 @@ export default class Game extends Phaser.Scene {
     }
   }
 
+  ciclosNocheDia() {
+    if (tiempo.minutos == ciclos) {
+      esDeDia = !esDeDia
+      ciclos ++
+    }
+    if (esDeDia) {
+      this.noche.setAlpha(0)
+      this.murcielagos.setAlpha(0).setVelocityX(0)
+      this.gatos.setAlpha(1).setVelocityX(speedFrente - 10)
+      console.log("dia")
+    }
+    if (!esDeDia) {
+      this.noche.setAlpha(0.45)
+      this.murcielagos.setAlpha(1).setVelocityX(speedFrente - 60)
+      this.gatos.setAlpha(0).setVelocityX(0)
+      console.log("noche")
+    }
+  }
+
   cadaSegundo() {
     if (this.isPaused === false) {
       contador.setText('Tiempo: ' + tiempo.minutos + ':' + tiempo.segundos)
     }
     actualizarContador()
-  }
-
-  agregarMurcielgo() {
-    //add murcielagos 
-    this.murcielagos = this.physics.add.sprite(width - 150, 160, "murcielago")
-      .setScale(1.6)
-      .setDepth(8)
-      .setVelocityX(speedFrente + 40)
-      .setImmovable(true);
-    this.murcielagos.body.allowGravity = false;
-
-    // Create animations Murciélagos
-    this.anims.create({
-      key: "volador",
-      frames: this.anims.generateFrameNumbers("murcielago", {
-        start: 0,
-        end: 17,
-      }),
-      frameRate: 7,
-      repeat: -1,
-    });
-
-    this.murcielagos.play("volador", true);
-
-    this.physics.add.overlap(this.player, this.murcielagos, this.damagePlayer, null, this);
   }
 }
 
@@ -405,13 +467,15 @@ let score
 let moneda
 let cielo
 let piso
-let generarScene = 50
+let generarScene = 40
 let cantScenes = 3
 let altura = 0.28
-let speedFrente = -190
+let speedFrente = -180
 let contador
-let murcielagos
-let tiempoDeNoche = "05"
+let murcielago
+let duracionDia = 59
+let esDeDia = true
+let ciclos = 1
 
 var tiempo = {
   minutos: '00',
