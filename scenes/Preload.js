@@ -58,8 +58,6 @@ export default class Preload extends Phaser.Scene {
         this.load.image("galleta", "./public/assets/consumible-1.png");
     }
 
-
-
     update() {
         console.log("start-pass")
         this.scene.start("main-menu")

@@ -382,7 +382,7 @@ export default class Game extends Phaser.Scene {
   }
 
   derrotado() {
-    this.scene.start("game-over") //Ir a la escena de Derrota
+    this.scene.start("game-over",) //Ir a la escena de Derrota
   }
 
   agregarObstaculos() {
@@ -476,6 +476,7 @@ let murcielago
 let duracionDia = 59
 let esDeDia = true
 let ciclos = 1
+
 
 
 var tiempo = {
