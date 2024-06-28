@@ -1,4 +1,6 @@
 import Game from "./scenes/Game.js";
+import GameOver from "./scenes/GameOver.js";
+import MainMenu from "./scenes/Menu.js";
 import Preload from "./scenes/Preload.js";
 
 // Create a new Phaser config object
@@ -30,7 +32,7 @@ const config = {
   // Only the first scene will be shown
   // Remember to import the scene before adding it to the list
   backgroundColor: '#5c5b5b',
-  scene: [Preload, Game],
+  scene: [Preload, MainMenu, Game, GameOver],
 };
 
 // Create a new Phaser game instance

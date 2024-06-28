@@ -9,8 +9,9 @@ export default class Game extends Phaser.Scene {
     score = 0
     tiempo.segundos = "00"
     this.restarVidas = 1
+    this.CantidadVidas = 3
   }
-  
+
   create() {
     //add images
     width = this.scale.width
@@ -22,6 +23,16 @@ export default class Game extends Phaser.Scene {
       callback: () => {
         this.cadaSegundo();
       },
+    })
+
+    this.time.addEvent({
+      delay: 1500,
+      loop: true,
+
+      callback: () => {
+        this.agregarObstaculos();
+      },
+      callbackScope: this,
     })
 
     //Agregar imágenes de fondo
@@ -119,7 +130,7 @@ export default class Game extends Phaser.Scene {
 
     // add player
     this.player = this.physics.add.sprite(270, 260, "dude")
-      .setScale(1.48).setSize(20, 32).setOffset(25, -1).setData('vida', 75)
+      .setScale(1.48).setSize(20, 32).setOffset(25, -1).setData('vida', this.CantidadVidas)
 
     // add physics to player
     this.player.setCollideWorldBounds(true).setDepth(8);
@@ -134,24 +145,14 @@ export default class Game extends Phaser.Scene {
     this.gatos = this.physics.add.group();
 
     // Agregar Vidas
-    this.vidas = this.physics.add.group({
-      key: 'vidas',
-      repeat: 2,
-      setScale: {
-        x: 1,
-        y: 1
-      },
-      setXY: {
-        x: width / 2.15,
-        y: 15,
-        stepX: 35
-      },
-      allowGravity: false,
-    })
 
-    this.vidas.children.iterate(function (child) {
-      child.setDepth(10);
-    });
+    const vidasStepX = 30
+    let posicionVidas = width / 2.6
+    for (let i = 0; i < this.CantidadVidas; i++) {
+      arrayVidas.push(this.add.sprite(posicionVidas, 40, 'vidas').setDepth(9))
+      posicionVidas += vidasStepX
+    }
+
 
     // create animations Personaje
     this.anims.create({
@@ -172,7 +173,7 @@ export default class Game extends Phaser.Scene {
       frameRate: 10,
       repeat: -1,
     });
-    
+
     //Animación de daño
     this.anims.create({
       key: "damage",
@@ -205,8 +206,8 @@ export default class Game extends Phaser.Scene {
       repeat: -1,
     });
 
-    this.physics.add.overlap(this.player, this.gatos, this.damagePlayer, null, this);
-    this.physics.add.overlap(this.player, this.murcielagos, this.damagePlayer, null, this);
+    this.physics.add.overlap(this.player, this.gatos, this.dañoAlJugador, null, this);
+    this.physics.add.overlap(this.player, this.murcielagos, this.dañoAlJugador, null, this);
 
     //Cuanto se va a mover la cámara
     this.cameras.main.setBounds(0, 0, width * cantScenes, height)
@@ -216,7 +217,7 @@ export default class Game extends Phaser.Scene {
 
     //collide with platforms
     this.physics.add.collider(this.player, this.pisos);
-    this.physics.add.overlap(this.player, this.obstaculos, this.damagePlayer, null, this);
+    this.physics.add.overlap(this.player, this.obstaculos, this.dañoAlJugador, null, this);
 
     // crear grupo recolectables
     this.recolectables = this.physics.add.group();
@@ -258,64 +259,6 @@ export default class Game extends Phaser.Scene {
     }).setDepth(10);
 
     newWidth = this.cielo.width
-
-    // ciclo que genera las cosas
-    for (let i = 0; i < generarScene; i++) {
-      const x = Phaser.Math.Between(newWidth - 100, newWidth + 100);
-      const y = 275;
-
-      const obstaculo = this.obstaculos.create(Phaser.Math.Between(x, x + 200), y, "obstacle");
-      obstaculo.setScale(2, 2.3).refreshBody().setOffset(1, 1).setSize(25, 18)
-        .setVelocityX(speedFrente - 10)
-        .setImmovable(true)
-        .setDepth(8);
-      obstaculo.body.allowGravity = false;
-
-      const insertMurcielagos = Phaser.Math.FloatBetween(0, 1);
-      if (insertMurcielagos >= 0.5 && insertMurcielagos <= 0.9) {
-        let murcielago = this.murcielagos.create(newWidth - 10, 160, "murcielago")
-          .setScale(1.6)
-          .setDepth(8)
-          .setVelocityX(0)
-          .setImmovable(true)
-          .setAlpha(0);
-        murcielago.body.allowGravity = false;
-
-        murcielago.play("volador", true);
-      }
-
-      const insertRecolectable = Phaser.Math.FloatBetween(0, 1);
-      if (insertRecolectable > 0.5 && insertRecolectable !== 1) {
-        recolectable = this.recolectables.create(x, y - 50, "galleta")
-          .setDepth(8)
-          .setScale(1.3)
-          .setVelocityX(speedFrente - 10);
-        recolectable.body.allowGravity = false;
-      }
-      if (insertRecolectable <= 0.28 && insertRecolectable >= 0.2) {
-        moneda = this.monedas.create(x, y - 50, "moneda")
-          .setDepth(8)
-          .setScale(1.7)
-          .setVelocityX(speedFrente - 10)
-        moneda.body.allowGravity = false;
-      }
-      newWidth += width
-
-      const InsertGatos = Phaser.Math.FloatBetween(0, 1);
-      if (InsertGatos >= 0.25 && InsertGatos <= 0.5) {
-        let gato = this.gatos.create(newWidth - 10, y - 15, "gato")
-          .setScale(0.3)
-          .setDepth(8)
-          .setVelocityX(0)
-          .setImmovable(true)
-          .setAlpha(0);
-        gato.body.allowGravity = false;
-        gato.play("idle", true);
-      }
-    }
-
-    const posicionY = this.player.y;
-    console.log(posicionY)
   }
 
   update() {
@@ -334,7 +277,7 @@ export default class Game extends Phaser.Scene {
     score += 30;
     txtScore.setText('Score: ' + score);
     recolectable.disableBody(true, true);
-    console.log("recolecto")
+    //console.log("recolecto")
   }
   //Funcion de juntar las monedas
   collectMoneda(player, moneda) {
@@ -342,7 +285,6 @@ export default class Game extends Phaser.Scene {
       score += 300;
     txtScore.setText('Score: ' + score);
     moneda.disableBody(true, true);
-
   }
   //Reiniciar el Juego
   reiniciarJuego() {
@@ -388,30 +330,24 @@ export default class Game extends Phaser.Scene {
   }
 
   //Funcion para el Daño al personaje
-  damagePlayer() {
+  dañoAlJugador(player, obstaculo) {
     this.player.anims.play("damage", true);
     this.time.addEvent({
       delay: 900,
       callback: this.correr,
       callbackScope: this,
     })
-    if (this.player.anims.play('damage', true)) {
-      if ((this.player.getData('vida') - this.restarVidas <= 75 && (this.player.getData('vida') != 0))) {
-        this.player.setData('vida', this.player.getData('vida') - this.restarVidas);
-        this.vidas.setAlpha(0.8)
-        if ((this.player.getData('vida') - this.restarVidas <= 50 && (this.player.getData('vida') != 0))) {
-          this.player.setData('vida', this.player.getData('vida') - this.restarVidas);
-          this.vidas.setAlpha(0.5)
-          if ((this.player.getData('vida') - this.restarVidas) <= 25 && (this.player.getData('vida')) != 0) {
-            this.player.setData('vida', this.player.getData('vida') - this.restarVidas);
-            console.log(this.player.getData('vida'))
-          }
-        }
-      } else {
-        //console.log('perdiste')
-        this.vidas.setAlpha(0)
-      }
+
+    if (this.CantidadVidas > 0) {
+      this.CantidadVidas--;
+      const vidasSprite = arrayVidas.pop();
+      vidasSprite.destroy();
     }
+    if (this.CantidadVidas == 0) {
+      console.log("no Vidas")
+      this.derrotado()
+    }
+    obstaculo.destroy();
   }
 
   //Funcion para el movimiento del Personaje
@@ -437,18 +373,82 @@ export default class Game extends Phaser.Scene {
     }
     if (esDeDia) {
       this.noche.setAlpha(0)
-      this.murcielagos.setAlpha(0).setVelocityX(0)
-      this.gatos.setAlpha(1).setVelocityX(speedFrente - 10)
-      console.log("dia")
+      //console.log("dia")
     }
     if (!esDeDia) {
       this.noche.setAlpha(0.45)
-      this.murcielagos.setAlpha(1).setVelocityX(speedFrente - 60)
-      this.gatos.setAlpha(0).setVelocityX(0)
-      console.log("noche")
+      //console.log("noche")
     }
   }
 
+  derrotado() {
+    this.scene.start("game-over") //Ir a la escena de Derrota
+  }
+
+  agregarObstaculos() {
+    if (this.derrotado) {
+      let num1 = Phaser.Math.FloatBetween(0, 1);
+      const InsertGatos = Phaser.Math.FloatBetween(0, 1);
+      const y = 275;
+      const x = newWidth;
+
+      // Afuera de los if, Obstáculo aparece 50/50
+      if (num1 > 0.6) {
+        const obstaculo = this.obstaculos.create(x, y, "obstacle");
+        obstaculo.setScale(2, 2.3).refreshBody().setOffset(1, 1).setSize(25, 18)
+          .setVelocityX(speedFrente - 10)
+          .setImmovable(true)
+          .setDepth(8);
+        obstaculo.body.allowGravity = false;
+      }
+
+      //Afuera del if de dia o de noche
+      const insertRecolectable = Phaser.Math.FloatBetween(0, 1);
+      if (insertRecolectable > 0.5 && insertRecolectable !== 1) {
+        recolectable = this.recolectables.create(x, y - 80, "galleta")
+          .setDepth(8)
+          .setScale(1.24)
+          .setVelocityX(speedFrente - 10)
+          .setSize(30, 30);
+        recolectable.body.allowGravity = false;
+      }
+      if (insertRecolectable <= 0.28 && insertRecolectable >= 0.23) {
+        moneda = this.monedas.create(x, y - 80, "moneda")
+          .setDepth(8)
+          .setScale(1.7)
+          .setVelocityX(speedFrente - 10)
+        moneda.body.allowGravity = false;
+      }
+
+      // If de dia, agregar Gatos
+      if (esDeDia) {
+        if (InsertGatos >= 0.4 && InsertGatos <= 0.5) {
+          let distanciaGatos = x + Phaser.Math.Between(60, 80);
+          let gato = this.gatos.create(distanciaGatos, y - 15, "gato")
+            .setScale(0.3)
+            .setDepth(8)
+            .setVelocityX(speedFrente - 10)
+            .setImmovable(true)
+          gato.body.allowGravity = false;
+          gato.play("idle", true);
+        }
+      }
+      // If de noche, agregar Murcielagos
+      if (!esDeDia) {
+        const insertMurcielagos = Phaser.Math.FloatBetween(0, 1);
+        if (insertMurcielagos >= 0.5 && insertMurcielagos <= 0.9) {
+          let distanciaMurcielagos = x + Phaser.Math.Between(20, 40);
+          let murcielago = this.murcielagos.create(distanciaMurcielagos, y - 120, "murcielago")
+            .setScale(1.6)
+            .setDepth(8)
+            .setVelocityX(speedFrente - 70)
+            .setImmovable(true)
+          murcielago.body.allowGravity = false;
+          murcielago.play("volador", true);
+        }
+      }
+    }
+  }
   cadaSegundo() {
     if (this.isPaused === false) {
       contador.setText('Tiempo: ' + tiempo.minutos + ':' + tiempo.segundos)
@@ -457,6 +457,7 @@ export default class Game extends Phaser.Scene {
   }
 }
 
+let arrayVidas = []
 let height
 let width
 let newWidth
@@ -475,6 +476,7 @@ let murcielago
 let duracionDia = 59
 let esDeDia = true
 let ciclos = 1
+
 
 var tiempo = {
   minutos: '00',
