@@ -10,7 +10,7 @@ export default class Game extends Phaser.Scene {
     tiempo.segundos = "00"
     this.restarVidas = 1
     this.CantidadVidas = 3
-    
+
   }
 
   create() {
@@ -20,8 +20,6 @@ export default class Game extends Phaser.Scene {
 
     this.GameMusic = this.sound.add("gamemusic");
     this.GameMusic.play();
-    
-    
 
     this.time.addEvent({
       delay: 1000,
@@ -32,7 +30,7 @@ export default class Game extends Phaser.Scene {
     })
 
     this.time.addEvent({
-      delay: 61000,
+      delay: 53100,
       loop: true,
       callback: () => {
         this.musicaInstrumental();
@@ -65,7 +63,6 @@ export default class Game extends Phaser.Scene {
       this.game.config.height,
       "nubes"
     );
-
 
     this.backmontana = this.add.tileSprite(
       this.game.config.width / 2,
@@ -161,9 +158,9 @@ export default class Game extends Phaser.Scene {
     // Agregar Vidas
 
     const vidasStepX = 30
-    let posicionVidas = width / 2.6
+    let posicionVidas = width / 2.3
     for (let i = 0; i < this.CantidadVidas; i++) {
-      arrayVidas.push(this.add.sprite(posicionVidas, 40, 'vidas').setDepth(9))
+      arrayVidas.push(this.add.sprite(posicionVidas, 33, 'vidas').setDepth(9))
       posicionVidas += vidasStepX
     }
 
@@ -177,6 +174,7 @@ export default class Game extends Phaser.Scene {
       }),
       frameRate: 6,
     });
+
     //Animación de Derecha
     this.anims.create({
       key: "right",
@@ -266,6 +264,16 @@ export default class Game extends Phaser.Scene {
     txtScore = this.add.text(20, 20, "Score: 0", {
       font: "20px Helvetica",
       fill: "#ff0000"
+    }).setDepth(10);
+
+    txtContoles = this.add.text(width/12, 350, "'X' to bark", {
+      font: "12px Helvetica",
+      fill: "#ffffff"
+    }).setDepth(10);
+
+    txtContoles2 = this.add.text(width - width/5 , 350, "'ENTER' to pause", {
+      font: "12px Helvetica",
+      fill: "#ffffff"
     }).setDepth(10);
 
     //Agregar un temporizador, segundero
@@ -429,11 +437,11 @@ export default class Game extends Phaser.Scene {
     this.dogLoseGameSample.play();
     this.dogRunSample.stop();
     this.GameMusic.stop();
-    this.scene.start("game-over",); //Ir a la escena de Derrota
+    this.scene.start("game-over", ); //Ir a la escena de Derrota
   }
 
   musicaInstrumental() {
-    this.gamemusic.play();
+    this.GameMusic.play();
   }
 
   agregarObstaculos() {
@@ -515,6 +523,8 @@ let height
 let width
 let newWidth
 let txtScore
+let txtContoles
+let txtContoles2
 let recolectable
 let score
 let moneda
@@ -535,7 +545,7 @@ var tiempo = {
   segundos: '00'
 }
 
-function actualizarContador() { 
+function actualizarContador() {
   tiempo.segundos++;
   tiempo.segundos = (tiempo.segundos >= 10) ? tiempo.segundos : '0' + tiempo.segundos;
   if (tiempo.segundos >= 60) {
