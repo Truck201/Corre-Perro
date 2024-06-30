@@ -9,7 +9,7 @@ export default class Game extends Phaser.Scene {
     score = 0
     tiempo.segundos = "00"
     this.restarVidas = 1
-    this.CantidadVidas = 1
+    this.CantidadVidas = 3
   }
 
   create() {
