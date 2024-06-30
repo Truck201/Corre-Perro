@@ -17,8 +17,8 @@ export default class Game extends Phaser.Scene {
     width = this.scale.width
     height = this.scale.height
 
-    this.load.audio("gamemusic","./sounds/music/gameMusicV2.mp3");
-    this.gamemusic.play();
+    this.GameMusic = this.load.audio("gamemusic","./sounds/music/gameMusicV2.mp3");
+    this.GameMusic.play();
 
     this.time.addEvent({
       delay: 1000,
