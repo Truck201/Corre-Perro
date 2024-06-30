@@ -10,6 +10,7 @@ export default class Game extends Phaser.Scene {
     tiempo.segundos = "00"
     this.restarVidas = 1
     this.CantidadVidas = 3
+    
   }
 
   create() {
@@ -19,6 +20,8 @@ export default class Game extends Phaser.Scene {
 
     this.GameMusic = this.sound.add("gamemusic");
     this.GameMusic.play();
+    
+    
 
     this.time.addEvent({
       delay: 1000,
@@ -249,10 +252,12 @@ export default class Game extends Phaser.Scene {
       if (!this.isPaused) {
         // Si está pausado, reanudar el juego
         this.game.pause();
+        this.GameMusic.pause();
         this.isPaused = true;
       } else {
         // Si no está pausado, pausar el juego
         this.game.resume();
+        this.GameMusic.resume();
         this.isPaused = false;
       }
     });
@@ -320,6 +325,7 @@ export default class Game extends Phaser.Scene {
   //Reiniciar el Juego
   reiniciarJuego() {
     this.scene.restart()
+    this.GameMusic.pause();
     console.log("Restart")
   }
 
@@ -341,7 +347,7 @@ export default class Game extends Phaser.Scene {
   }
 
   encontrarGatoMasCercano() {
-    let distanciaMinima = 400; //Number.MAX_VALUE;
+    let distanciaMinima = 350; //Number.MAX_VALUE;
     let gatoMasCercano = null;
     this.gatos.getChildren().forEach((gato) => {
       const distancia = Phaser.Math.Distance.Between(this.player.x, this.player.y, gato.x, gato.y);
@@ -422,7 +428,7 @@ export default class Game extends Phaser.Scene {
   derrotado() {
     this.dogLoseGameSample.play();
     this.dogRunSample.stop();
-    this.gamemusic.stop();
+    this.GameMusic.stop();
     this.scene.start("game-over",); //Ir a la escena de Derrota
   }
 
