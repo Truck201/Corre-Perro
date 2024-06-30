@@ -56,6 +56,29 @@ export default class Preload extends Phaser.Scene {
         this.load.image("obstacle", "./public/assets/piedra.png");
         this.load.image("moneda", "./public/assets/moneda.png");
         this.load.image("galleta", "./public/assets/consumible-1.png");
+
+        //Todos los audios
+        //Sonidos del juego y del Perro
+        this.load.audio("sounddogcookies","./sounds/dog-cookieCollect.mp3");
+        this.load.audio("sounddogcoins","./sounds/dog-coinCollect.mp3");
+        this.load.audio("sounddogrun","./sounds/dog-stepsRun.mp3");
+        this.load.audio("sounddogbark","./sounds/dog-bark.mp3");
+        this.load.audio("sounddoghurt","./sounds/dog-hurt.mp3");
+        this.load.audio("sounddogjump","./sounds/dog-jump.mp3");
+        this.load.audio("sounddoglose","./sounds/dog-loseSound.mp3");
+        //Sonidos Gato
+        this.load.audio("soundcat","./sounds/cat-sound.mp3");
+        this.load.audio("soundcatangry","./sounds/cat-angry.mp3");
+        //Sonido Murcielago
+        this.load.audio("soundbat","./sounds/bat-spawn.mp3");
+        //Menu Sounds
+        this.load.audio("soundmenuboom","./sounds/menu-boom.mp3");
+        this.load.audio("soundmenubirds","./sounds/menu-birds.mp3");
+
+        //Agregando Temas
+        this.load.audio("gamemusic","./sounds/music/gameMusicV2.mp3");
+        this.load.audio("menumusic","./sounds/music/intro.mp3");
+
     }
 
     update() {

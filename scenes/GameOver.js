@@ -14,6 +14,7 @@ export default class GameOver extends Phaser.Scene {
 
         //Agregar la "R" para Reiniciar e empezar Nuevamente
         this.input.keyboard.on("keydown-R", this.irEscenaPrincipal, this);
+        
     }
 
     irEscenaPrincipal() {

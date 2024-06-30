@@ -9,7 +9,7 @@ export default class Game extends Phaser.Scene {
     score = 0
     tiempo.segundos = "00"
     this.restarVidas = 1
-    this.CantidadVidas = 3
+    this.CantidadVidas = 1
   }
 
   create() {
@@ -17,11 +17,22 @@ export default class Game extends Phaser.Scene {
     width = this.scale.width
     height = this.scale.height
 
+    this.load.audio("gamemusic","./sounds/music/gameMusicV2.mp3");
+    this.gamemusic.play();
+
     this.time.addEvent({
       delay: 1000,
       loop: true,
       callback: () => {
         this.cadaSegundo();
+      },
+    })
+
+    this.time.addEvent({
+      delay: 61000,
+      loop: true,
+      callback: () => {
+        this.musicaInstrumental();
       },
     })
 
@@ -259,6 +270,24 @@ export default class Game extends Phaser.Scene {
     }).setDepth(10);
 
     newWidth = this.cielo.width
+
+    //Incorporar Sonidos del Perro
+    this.dogRunSample = this.sound.add('sounddogrun')
+    this.dogHurtSample = this.sound.add('sounddoghurt')
+    this.dogCollectCookieSample = this.sound.add('sounddogcookies')
+    this.dogCollectCoinSample = this.sound.add('sounddogcoins')
+    this.dogJumpSample = this.sound.add('sounddogjump')
+    this.dogBarkSample = this.sound.add('sounddogbark')
+
+    //Incorporar Sondios del Gato
+    this.catAppearsSample = this.sound.add('soundcat')
+    this.catAngrySample = this.sound.add('soundcatangry')
+
+    //Sonidos del Murcielago
+    this.batSoundSample = this.sound.add('soundbat')
+
+    //Sonido lose game
+    this.dogLoseGameSample = this.sound.add('sounddoglose')
   }
 
   update() {
@@ -274,6 +303,7 @@ export default class Game extends Phaser.Scene {
   }
   //funcion de juntar las galletas
   collectRecolectable(player, recolectable) {
+    this.dogCollectCookieSample.play();
     score += 30;
     txtScore.setText('Score: ' + score);
     recolectable.disableBody(true, true);
@@ -281,6 +311,7 @@ export default class Game extends Phaser.Scene {
   }
   //Funcion de juntar las monedas
   collectMoneda(player, moneda) {
+    this.dogCollectCoinSample.play();
     console.log("MONEDA"),
       score += 300;
     txtScore.setText('Score: ' + score);
@@ -294,9 +325,11 @@ export default class Game extends Phaser.Scene {
 
   ladrarPerro() {
     if (this.player.body.touching.down) {
+      this.dogBarkSample.play();
       let gatoMasCercano = this.encontrarGatoMasCercano();
       if (gatoMasCercano) {
         gatoMasCercano.destroy();
+        this.catAngrySample.play();
       }
       let ladro = this.aLadrar.create(340, 255, 'ladrido').setDepth(8)
       this.time.addEvent({
@@ -347,15 +380,20 @@ export default class Game extends Phaser.Scene {
       console.log("no Vidas")
       this.derrotado()
     }
+    this.dogHurtSample.play();
     obstaculo.destroy();
   }
 
   //Funcion para el movimiento del Personaje
   movimientoPersonaje() {
+    if (!this.player.body.touching.down) {
+      this.dogRunSample.play();
+    }
     if (this.cursor.down.isDown) {
       this.player.setVelocityY(200);
     }
     if (this.cursor.up.isDown && this.player.body.touching.down) {
+      this.dogJumpSample.play();
       this.player.setVelocityY(-220);
       this.player.anims.play("air", true);
       this.time.addEvent({
@@ -382,7 +420,14 @@ export default class Game extends Phaser.Scene {
   }
 
   derrotado() {
-    this.scene.start("game-over",) //Ir a la escena de Derrota
+    this.dogLoseGameSample.play();
+    this.dogRunSample.stop();
+    this.gamemusic.stop();
+    this.scene.start("game-over",); //Ir a la escena de Derrota
+  }
+
+  musicaInstrumental() {
+    this.gamemusic.play();
   }
 
   agregarObstaculos() {
@@ -431,6 +476,7 @@ export default class Game extends Phaser.Scene {
             .setImmovable(true)
           gato.body.allowGravity = false;
           gato.play("idle", true);
+          this.catAppearsSample.play();
         }
       }
       // If de noche, agregar Murcielagos
@@ -445,6 +491,7 @@ export default class Game extends Phaser.Scene {
             .setImmovable(true)
           murcielago.body.allowGravity = false;
           murcielago.play("volador", true);
+          this.batSoundSample.play();
         }
       }
     }
@@ -477,14 +524,12 @@ let duracionDia = 59
 let esDeDia = true
 let ciclos = 1
 
-
-
 var tiempo = {
   minutos: '00',
   segundos: '00'
 }
 
-function actualizarContador() {
+function actualizarContador() { 
   tiempo.segundos++;
   tiempo.segundos = (tiempo.segundos >= 10) ? tiempo.segundos : '0' + tiempo.segundos;
   if (tiempo.segundos >= 60) {
