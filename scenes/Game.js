@@ -8,9 +8,9 @@ export default class Game extends Phaser.Scene {
     this.isPaused = false;
     score = 0
     tiempo.segundos = "00"
+    tiempo.minutos = "00"
     this.restarVidas = 1
     this.CantidadVidas = 3
-
   }
 
   create() {
@@ -251,11 +251,13 @@ export default class Game extends Phaser.Scene {
         // Si está pausado, reanudar el juego
         this.game.pause();
         this.GameMusic.pause();
+        this.dogRunSample.pause();
         this.isPaused = true;
       } else {
         // Si no está pausado, pausar el juego
         this.game.resume();
         this.GameMusic.resume();
+        this.dogRunSample.resume();
         this.isPaused = false;
       }
     });
