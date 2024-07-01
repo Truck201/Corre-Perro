@@ -11,6 +11,7 @@ export default class Game extends Phaser.Scene {
     tiempo.minutos = "00"
     this.restarVidas = 1
     this.CantidadVidas = 3
+    esDeDia = true
   }
 
   create() {
