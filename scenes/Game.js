@@ -266,7 +266,7 @@ export default class Game extends Phaser.Scene {
     // crear el texto de puntos, con sus propiedades; Inicializamos en 0
     txtScore = this.add.text(20, 20, "Score: 0", {
       font: "20px Helvetica",
-      fill: "#ff0000"
+      fill: "#ffffff"
     }).setDepth(10);
 
     txtContoles = this.add.text(width/12, 350, "'X' to bark", {
@@ -282,7 +282,7 @@ export default class Game extends Phaser.Scene {
     //Agregar un temporizador, segundero
     contador = this.add.text(width * 0.75, 20, "Tiempo: 00:" + tiempo.segundos, {
       font: "20px Helvetica",
-      fill: "#ff0000"
+      fill: "#ffffff"
     }).setDepth(10);
 
     newWidth = this.cielo.width
